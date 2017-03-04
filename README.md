@@ -1,0 +1,2 @@
+# KvcsParkingModuleCore
+It is a private owned application by a company called "KVCS" in charge of parking system. This module is in charge of parking, kvcs conductors management. It serves as core for those major actions: managment of conductors and parking and their cites/parking deployments. Thanks to Oltranz Ltd and Manzi Rene Christian the CEO and R&D team leader. Developped by Aubain ISHIMWE Consolateur. Email: aubain.c.ishimwe@oltranz.com / iaubain@yahoo.fr Tel: +2507 855 672 / +250 736 864 662
