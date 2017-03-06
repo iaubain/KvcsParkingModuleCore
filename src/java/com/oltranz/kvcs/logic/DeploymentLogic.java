@@ -258,6 +258,24 @@ public class DeploymentLogic {
                 out.print(AppDesc.APP_DESC+"DeploymentLogic isConductorVacant action failed due to: Conductor "+conductor.getFname()+" with ID"+conductor.getConductorId().replace(contractId, "")+" has system status "+conductor.getSystemStatusDesc());
                 return conductor.getSystemStatusDesc();
             }
+            
+            Deployment deployment = deploymentFacade.getLastDeployment(contractId, conductor.getConductorId()+contractId);
+            if(deployment != null){
+                if(deployment.getExpirationDate().getTime() < new Date().getTime()){
+                     out.print(AppDesc.APP_DESC+"DeploymentLogic isConductorVacant last conductor: "+conductor.getFname()+" with ID "+conductor.getConductorId().replace(contractId, "")+" Deployment expired has system status "+conductor.getSystemStatusDesc());
+                     deployment.setStatus(StatusConfig.EXPIRED);
+                     deployment.setStatusDesc(StatusConfig.EXPIRED_DESC);
+                     deploymentFacade.edit(deployment);
+                     deploymentFacade.refreshDeployment();
+                     
+                     conductor.setWorkStatus(StatusConfig.VACANT);
+                     conductor.setWorkStatusDesc(StatusConfig.VACANT_DESC);
+                     conductor.setLastAcessDate(new Date());
+                     conductor.setLastAccessDesc(ActionConfig.ACCESS);
+                     conductorFacade.edit(conductor);
+                     conductorFacade.refreshConductor();
+                }
+            }
             if(conductor.getWorkStatus() == StatusConfig.DEPLOYED){
                 out.print(AppDesc.APP_DESC+"DeploymentLogic isConductorVacant action failed due to: Conductor "+conductor.getFname()+" with ID"+conductor.getConductorId().replace(contractId, "")+" has work status "+conductor.getWorkStatusDesc());
                 return conductor.getWorkStatusDesc();

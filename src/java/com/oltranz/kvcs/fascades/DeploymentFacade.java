@@ -131,6 +131,25 @@ public class DeploymentFacade extends AbstractFacade<Deployment> {
         }
     }
     
+    public Deployment getLastDeployment(String contractId, String deployeeId){
+        try{
+            if(deployeeId.isEmpty())
+                return null;
+            Query q= em.createQuery("Select D from Deployment D WHERE D.contractId = :contractId AND D.deployeeId = :deployeeId ORDER BY D.id DESC");
+            q.setParameter("deployeeId", deployeeId)
+                    .setParameter("contractId", contractId)
+                    .setMaxResults(1);
+            List<Deployment> list = (List<Deployment>)q.getResultList();
+            if(!list.isEmpty())
+                return list.get(0);
+            else
+                return null;
+        }catch(Exception ex){
+            ex.printStackTrace(out);
+            return null;
+        }
+    }
+    
     public List<Deployment> getDeploymentByEndDate(String contractId, Date endDate){
         try{
             if(endDate == null)

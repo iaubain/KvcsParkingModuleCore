@@ -123,7 +123,7 @@ public class ConductorsLogic {
                         }catch(Exception e){
                             out.print(AppDesc.APP_DESC+" ConductorLogic createdBulkConductor failed to parse: "+ result + " due to: "+e.getMessage());
                             isCreated = false;
-                        }                        
+                        }
                     }
                 }
                 
@@ -196,6 +196,9 @@ public class ConductorsLogic {
                 out.print(AppDesc.APP_DESC+"ConductorLogic getConductor action failed due to: null request object");
                 return ReturnConfig.isFailed(Response.Status.EXPECTATION_FAILED, "No data found.");
             }
+            
+            adjustConductor(checkConductor);
+            
             String outPut = conductorFactory.tuneConductor(checkConductor);
             out.print(AppDesc.APP_DESC+"ConductorLogic createConductor action Succeeded output: "+outPut);
             return ReturnConfig.isSuccess(outPut);
@@ -219,7 +222,9 @@ public class ConductorsLogic {
             if(checkConductor == null){
                 out.print(AppDesc.APP_DESC+"ConductorLogic getConductor action failed due to: null request object");
                 return ReturnConfig.isFailed(Response.Status.EXPECTATION_FAILED, "No data found.");
-            }
+            } 
+            adjustConductor(checkConductor);
+            
             String outPut = conductorFactory.tuneConductor(checkConductor);
             out.print(AppDesc.APP_DESC+"ConductorLogic createConductor action Succeeded output: "+outPut);
             return ReturnConfig.isSuccess(outPut);
@@ -347,6 +352,33 @@ public class ConductorsLogic {
         }
     }
     
+    private void adjustConductor(Conductor conductor){
+        try{
+            
+            if(conductor == null)
+                return;
+            Deployment deployment = deploymentFacade.getLastDeployment(conductor.getContractId(), conductor.getConductorId()+conductor.getContractId());
+            if(deployment != null){
+                if(deployment.getExpirationDate().getTime() < new Date().getTime()){
+                    out.print(AppDesc.APP_DESC+"ConductorLogic adjustConductor last conductor: "+conductor.getFname()+" with ID "+conductor.getConductorId().replace(conductor.getContractId(), "")+" Deployment expired has system status "+conductor.getSystemStatusDesc());
+                    deployment.setStatus(StatusConfig.EXPIRED);
+                    deployment.setStatusDesc(StatusConfig.EXPIRED_DESC);
+                    deploymentFacade.edit(deployment);
+                    deploymentFacade.refreshDeployment();
+                    
+                    conductor.setWorkStatus(StatusConfig.VACANT);
+                    conductor.setWorkStatusDesc(StatusConfig.VACANT_DESC);
+                    conductor.setLastAcessDate(new Date());
+                    conductor.setLastAccessDesc(ActionConfig.ACCESS);
+                    conductorFacade.edit(conductor);
+                    conductorFacade.refreshConductor();
+                }
+            }
+        }catch(Exception e){
+            out.print(AppDesc.APP_DESC+"ConductorLogic adjustConductor last conductor: "+conductor.getFname()+" with ID "+conductor.getConductorId().replace(conductor.getContractId(), "")+" failed to adjust his her deployment data "+conductor.getSystemStatusDesc());
+                    
+        }
+    }
     private boolean isConductorUndeployed(Conductor conductor){
         try{
             List<Deployment> mDeployments = deploymentFacade.getDeploymentByDeployee(conductor.getContractId(), conductor.getConductorId());
