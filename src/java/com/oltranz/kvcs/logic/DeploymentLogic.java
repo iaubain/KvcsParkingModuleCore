@@ -65,7 +65,7 @@ public class DeploymentLogic {
             IdGenerator idGenerator;
     @EJB
             DeploymentFactory deploymentFactory;
-    
+    private String parkDetails;
     public Response createDeployment(String contractId, String body){
         out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment received Contract: "+contractId+" and Body: "+body);
         try{
@@ -78,8 +78,10 @@ public class DeploymentLogic {
                 return ReturnConfig.isFailed(Response.Status.EXPECTATION_FAILED, conductorStatus);
             }
             
-            if(!isDeploymentCreated(contractId, deploymentCreation, deploymentId))
-                return ReturnConfig.isFailed(Response.Status.BAD_REQUEST, "Not created, Revise your data");
+            if(!isDeploymentCreated(contractId, deploymentCreation, deploymentId)){
+                out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: "+parkDetails != null?" Possible reason: "+parkDetails:" ");
+                return ReturnConfig.isFailed(Response.Status.BAD_REQUEST, "Not created,"+parkDetails != null?" Possible reason: "+parkDetails:" "+"Revise your data");
+            }
             
             Deployment deployment = deploymentFacade.getDeploymentById(contractId, deploymentId);
             String outPut = deploymentFactory.tuneDeployment(deployment);
@@ -324,6 +326,11 @@ public class DeploymentLogic {
             Parking parking = parkingFacade.getParkingById(contractId, deploymentCreation.getParkingId()+contractId);
             if(parking == null){
                 out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: Parking not found");
+                return false;
+            }
+            if(parking.getStatus() == StatusConfig.MONITOR){
+                this.parkDetails = parking.getStatusDesc();
+                out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: Parking "+parking.getParkingId()+" "+parking.getParkingDesc()+" already under monitoring");
                 return false;
             }
             parking.setLastAccessAction(ActionConfig.ACCESS);
