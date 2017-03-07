@@ -135,7 +135,7 @@ public class DeploymentFacade extends AbstractFacade<Deployment> {
         try{
             if(deployeeId.isEmpty())
                 return null;
-            Query q= em.createQuery("Select D from Deployment D WHERE D.contractId = :contractId AND D.deployeeId = :deployeeId ORDER BY D.id DESC");
+            Query q= em.createQuery("Select D from Deployment D WHERE D.contractId = :contractId AND D.deployeeId = :deployeeId ORDER BY D.id ASC");
             q.setParameter("deployeeId", deployeeId)
                     .setParameter("contractId", contractId)
                     .setMaxResults(1);
