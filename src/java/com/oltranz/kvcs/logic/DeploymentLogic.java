@@ -78,6 +78,11 @@ public class DeploymentLogic {
                 return ReturnConfig.isFailed(Response.Status.EXPECTATION_FAILED, conductorStatus);
             }
             
+             if(DateFactory.makeDate(deploymentCreation.getEndDate()).before(new Date())){
+                out.print(AppDesc.APP_DESC+"DeploymentLogic isDeploymentCreated action failed due to: Invalid expiration date. "+deploymentCreation.getEndDate());
+                return ReturnConfig.isFailed(Response.Status.EXPECTATION_FAILED, "Invalid end date.");
+            }
+            
             if(!isDeploymentCreated(contractId, deploymentCreation, deploymentId)){
                 out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: "+parkDetails != null?" Possible reason: "+parkDetails:" ");
                 return ReturnConfig.isFailed(Response.Status.BAD_REQUEST, "Not created,"+parkDetails != null?" Possible reason: "+parkDetails:" "+"Revise your data");
@@ -261,9 +266,9 @@ public class DeploymentLogic {
                 return conductor.getSystemStatusDesc();
             }
             
-            Deployment deployment = deploymentFacade.getLastDeployment(contractId, conductor.getConductorId()+contractId);
+            Deployment deployment = deploymentFacade.getLastDeployment(contractId, conductor.getConductorId());
             if(deployment != null){
-                if(deployment.getExpirationDate().getTime() < new Date().getTime()){
+                if(deployment.getExpirationDate().before(new Date())){
                      out.print(AppDesc.APP_DESC+"DeploymentLogic isConductorVacant last conductor: "+conductor.getFname()+" with ID "+conductor.getConductorId().replace(contractId, "")+" Deployment expired has system status "+conductor.getSystemStatusDesc());
                      deployment.setStatus(StatusConfig.EXPIRED);
                      deployment.setStatusDesc(StatusConfig.EXPIRED_DESC);
@@ -328,11 +333,11 @@ public class DeploymentLogic {
                 out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: Parking not found");
                 return false;
             }
-            if(parking.getStatus() == StatusConfig.MONITOR){
-                this.parkDetails = parking.getStatusDesc();
-                out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: Parking "+parking.getParkingId()+" "+parking.getParkingDesc()+" already under monitoring");
-                return false;
-            }
+//            if(parking.getStatus() == StatusConfig.MONITOR){
+//                this.parkDetails = parking.getStatusDesc();
+//                out.print(AppDesc.APP_DESC+"DeploymentLogic createDeployment action failed due to: Parking "+parking.getParkingId()+" "+parking.getParkingDesc()+" already under monitoring");
+//                return false;
+//            }
             parking.setLastAccessAction(ActionConfig.ACCESS);
             parking.setLastAccessDate(date);
             
@@ -350,8 +355,8 @@ public class DeploymentLogic {
                     superUser.getUserId(),
                     conductor.getConductorId(),
                     parking.getParkingId(),
-                    new DateFactory().makeDate(deploymentCreation.getStartDate()),
-                    new DateFactory().makeDate(deploymentCreation.getEndDate()),
+                    DateFactory.makeDate(deploymentCreation.getStartDate()),
+                    DateFactory.makeDate(deploymentCreation.getEndDate()),
                     date,
                     StatusConfig.MONITOR,
                     StatusConfig.MONITOR_DESC);

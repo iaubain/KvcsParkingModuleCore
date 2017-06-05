@@ -20,13 +20,14 @@ import java.util.logging.Logger;
  * @author Hp
  */
 public class DateFactory {
-    public Date makeDate(String inputDate){
+    public static final Date makeDate(String inputDate){
           try {
             out.print(AppDesc.APP_DESC+" Date factory receives date to convert: "+inputDate);
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = formatter.parse(inputDate.replaceAll("Z$", "+0000"));
             return date;
         } catch (ParseException ex) {
+            out.print(AppDesc.APP_DESC+" DateFactory makeDate failed due to: "+ex.getMessage());
             Logger.getLogger(CommandExec.class.getName()).log(Level.SEVERE, null, ex);
             return new Date();
         }

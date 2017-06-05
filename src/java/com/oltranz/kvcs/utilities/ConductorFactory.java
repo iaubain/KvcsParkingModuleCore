@@ -140,9 +140,9 @@ public class ConductorFactory {
             
             if(conductor == null)
                 return;
-            Deployment deployment = deploymentFacade.getLastDeployment(conductor.getContractId(), conductor.getConductorId()+conductor.getContractId());
+            Deployment deployment = deploymentFacade.getLastDeployment(conductor.getContractId(), conductor.getConductorId());
             if(deployment != null){
-                if(deployment.getExpirationDate().getTime() < new Date().getTime()){
+                if(deployment.getExpirationDate().before(new Date())){
                     out.print(AppDesc.APP_DESC+"ConductorFactory adjustConductor last conductor: "+conductor.getFname()+" with ID "+conductor.getConductorId().replace(conductor.getContractId(), "")+" Deployment expired has system status "+conductor.getSystemStatusDesc());
                     deployment.setStatus(StatusConfig.EXPIRED);
                     deployment.setStatusDesc(StatusConfig.EXPIRED_DESC);
